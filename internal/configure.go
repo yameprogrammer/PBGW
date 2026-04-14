@@ -19,7 +19,7 @@ const (
 	EnvMaxHeaderBytes = "PBGW_MAX_HEADER_BYTES"
 )
 
-type Configurer struct {
+type Configure struct {
 	Development    bool
 	ServerSet      string
 	ProjectName    string
@@ -31,7 +31,7 @@ type Configurer struct {
 	MaxHeaderBytes int
 }
 
-func GetConfigurer() Configurer {
+func GetConfigure() Configure {
 	// 환경변수를 기본 설정으로 읽어와 구성한다.
 	// 환경변수는 PBGW_SERVER_SET, PBGW_PRJECT_NAME, PBGW_BASE_URL, PBGW_PORT
 	// 환경변수가 설정이 없는경우 config 파일을 참조 하도록 한다.
@@ -45,71 +45,76 @@ func GetConfigurer() Configurer {
 	envWriteTimeout := os.Getenv(EnvWriteTimeout)
 	envMaxHeaderBytes := os.Getenv(EnvMaxHeaderBytes)
 
-	var configurer Configurer
+	var configure Configure
 
 	// 환경변수가 없는 경우를 확인한다.
-	develop, err := strconv.ParseBool(envDevelopment)
-	if err != nil {
-		develop = true
+	if envDevelopment == "" {
+		configBaseDevelop := getConfigDevelop()
+		configure.Development = configBaseDevelop.Development
+	} else {
+		develop, err := strconv.ParseBool(envDevelopment)
+		if err != nil {
+			develop = true
+		}
+		configure.Development = develop
 	}
-	configurer.Development = develop
 
-	configurer.ServerSet = envServerSet
-	configurer.ProjectName = envProjectName
-	configurer.Address = envAddress
-	configurer.Port, _ = strconv.Atoi(envPort)
-	configurer.BaseUrl = envBaseUrl
+	configure.ServerSet = envServerSet
+	configure.ProjectName = envProjectName
+	configure.Address = envAddress
+	configure.Port, _ = strconv.Atoi(envPort)
+	configure.BaseUrl = envBaseUrl
 
-	configurer.ReadTimeout, _ = time.ParseDuration(envReadTimeout)
-	configurer.ReadTimeout *= time.Second
+	configure.ReadTimeout, _ = time.ParseDuration(envReadTimeout)
+	configure.ReadTimeout *= time.Second
 
-	configurer.WriteTimeout, _ = time.ParseDuration(envWriteTimeout)
-	configurer.WriteTimeout *= time.Second
+	configure.WriteTimeout, _ = time.ParseDuration(envWriteTimeout)
+	configure.WriteTimeout *= time.Second
 
-	configurer.MaxHeaderBytes, _ = strconv.Atoi(envMaxHeaderBytes)
-	configurer.MaxHeaderBytes *= 1024
+	configure.MaxHeaderBytes, _ = strconv.Atoi(envMaxHeaderBytes)
+	configure.MaxHeaderBytes *= 1024
 
 	// configurer 값이 비는 것 있다면 config 파일을 읽어와 배정 하도록 한다.
-	if configurer.ProjectName == "" {
-		configBaseProject := GetConfigBaseProject()
-		configurer.ProjectName = configBaseProject.Name
+	if configure.ProjectName == "" {
+		configBaseProject := getConfigBaseProject()
+		configure.ProjectName = configBaseProject.Name
 	}
 
-	if configurer.ServerSet == "" {
-		if configurer.Development == true {
-			configurer.ServerSet = "local"
+	if configure.ServerSet == "" {
+		if configure.Development == true {
+			configure.ServerSet = "local"
 		} else {
 			// hostname 을 읽어와서 server set 을 결정한다.
 			hostname, err := os.Hostname()
 			if err != nil {
 				panic(err)
 			}
-			configurer.ServerSet = hostname
+			configure.ServerSet = hostname
 		}
 	}
 
-	if configurer.Address == "" || configurer.BaseUrl == "" ||
-		configurer.Port == 0 || configurer.ReadTimeout == 0 || configurer.WriteTimeout == 0 ||
-		configurer.MaxHeaderBytes == 0 {
+	if configure.Address == "" || configure.BaseUrl == "" ||
+		configure.Port == 0 || configure.ReadTimeout == 0 || configure.WriteTimeout == 0 ||
+		configure.MaxHeaderBytes == 0 {
 
-		configServerSet := GetConfigServerSet(configurer.ServerSet)
+		configServerSet := getConfigServerSet(configure.ServerSet)
 
-		configurer.Address = configServerSet.BaseUrl + ":" + strconv.Itoa(configServerSet.Port)
-		configurer.BaseUrl = "http://" + configurer.Address
-		configurer.Port = configServerSet.Port
-		configurer.ReadTimeout = time.Duration(configServerSet.ReadTimeout) * time.Second
-		configurer.WriteTimeout = time.Duration(configServerSet.WriteTimeout) * time.Second
-		configurer.MaxHeaderBytes = configServerSet.MaxHeaderBytes * 1024
+		configure.Address = configServerSet.BaseUrl + ":" + strconv.Itoa(configServerSet.Port)
+		configure.BaseUrl = "http://" + configure.Address
+		configure.Port = configServerSet.Port
+		configure.ReadTimeout = time.Duration(configServerSet.ReadTimeout) * time.Second
+		configure.WriteTimeout = time.Duration(configServerSet.WriteTimeout) * time.Second
+		configure.MaxHeaderBytes = configServerSet.MaxHeaderBytes * 1024
 	}
 
-	return configurer
+	return configure
 }
 
 type ConfigDevelop struct {
 	Development bool `json:"development"`
 }
 
-func GetConfigDevelop() ConfigDevelop {
+func getConfigDevelop() ConfigDevelop {
 	configBaseDevelopJsonFile, err := os.ReadFile("config/base/develop.json")
 	if err != nil {
 		panic(err)
@@ -126,7 +131,7 @@ type ConfigBaseProject struct {
 	Name string `json:"name"`
 }
 
-func GetConfigBaseProject() ConfigBaseProject {
+func getConfigBaseProject() ConfigBaseProject {
 	configBaseProjectJsonFile, err := os.ReadFile("config/base/project.json")
 	if err != nil {
 		panic(err)
@@ -147,7 +152,7 @@ type ConfigServerSet struct {
 	MaxHeaderBytes int    `json:"max_header_bytes"`
 }
 
-func GetConfigServerSet(serverSet string) ConfigServerSet {
+func getConfigServerSet(serverSet string) ConfigServerSet {
 	serverSetJsonFile, err := os.ReadFile("config/" + serverSet + "/server_set.json")
 	if err != nil {
 		panic(err)

@@ -2,7 +2,7 @@ package main
 
 import (
 	"PBGW/internal"
-	"fmt"
+	"PBGW/internal/http/handler/web"
 	"log"
 	"net/http"
 )
@@ -10,11 +10,11 @@ import (
 func main() {
 	var mux = http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello World")
-	})
+	// 핸들러 등록
+	handlerWeb := web.HandlerWeb{}
+	handlerWeb.RegisterHandlers(mux)
 
-	configurer := internal.GetConfigurer()
+	configurer := internal.GetConfigure()
 	var httpServer = &http.Server{
 		Addr:           configurer.Address,
 		Handler:        mux,
