@@ -1,0 +1,7 @@
+{
+  "base_url": "localhost",
+  "port": 8080,
+  "read_timeout": 30,
+  "write_timeout": 30,
+  "max_header_bytes": 8
+}
