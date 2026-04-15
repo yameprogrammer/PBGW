@@ -1,0 +1,70 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/server.Dockerfile
+    container_name: pbgw-app
+    environment:
+      TZ: Asia/Seoul
+      PBGW_DEVELOPMENT: "true"
+      PBGW_SERVER_SET: docker
+      PBGW_PROJECT_NAME: PBGW
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/web/ > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    container_name: pbgw-mysql
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: pbgw
+      MYSQL_USER: pbgw
+      MYSQL_PASSWORD: pbgwpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: pbgw-postgres
+    environment:
+      TZ: Asia/Seoul
+      POSTGRES_DB: pbgw
+      POSTGRES_USER: pbgw
+      POSTGRES_PASSWORD: pbgwpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  postgres_data:
