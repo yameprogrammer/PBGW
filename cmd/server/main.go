@@ -18,7 +18,7 @@ func main() {
 	// 미들웨어 적용
 	finalMux := middleware.Maintenance(mux)
 
-	configurer := internal.GetConfigure()
+	configurer := internal.NewServerConfigure()
 	var httpServer = &http.Server{
 		Addr:           configurer.Address,
 		Handler:        finalMux,

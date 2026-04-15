@@ -19,7 +19,7 @@ const (
 	EnvMaxHeaderBytes = "PBGW_MAX_HEADER_BYTES"
 )
 
-type Configure struct {
+type ServerConfigure struct {
 	Development    bool
 	ServerSet      string
 	ProjectName    string
@@ -31,7 +31,7 @@ type Configure struct {
 	MaxHeaderBytes int
 }
 
-func GetConfigure() Configure {
+func NewServerConfigure() ServerConfigure {
 	// 환경변수를 기본 설정으로 읽어와 구성한다.
 	// 환경변수는 PBGW_SERVER_SET, PBGW_PRJECT_NAME, PBGW_BASE_URL, PBGW_PORT
 	// 환경변수가 설정이 없는경우 config 파일을 참조 하도록 한다.
@@ -45,11 +45,11 @@ func GetConfigure() Configure {
 	envWriteTimeout := os.Getenv(EnvWriteTimeout)
 	envMaxHeaderBytes := os.Getenv(EnvMaxHeaderBytes)
 
-	var configure Configure
+	var configure ServerConfigure
 
 	// 환경변수가 없는 경우를 확인한다.
 	if envDevelopment == "" {
-		configBaseDevelop := getConfigDevelop()
+		configBaseDevelop := newConfigDevelop()
 		configure.Development = configBaseDevelop.Development
 	} else {
 		develop, err := strconv.ParseBool(envDevelopment)
@@ -76,7 +76,7 @@ func GetConfigure() Configure {
 
 	// configurer 값이 비는 것 있다면 config 파일을 읽어와 배정 하도록 한다.
 	if configure.ProjectName == "" {
-		configBaseProject := getConfigBaseProject()
+		configBaseProject := newConfigBaseProject()
 		configure.ProjectName = configBaseProject.Name
 	}
 
@@ -97,7 +97,7 @@ func GetConfigure() Configure {
 		configure.Port == 0 || configure.ReadTimeout == 0 || configure.WriteTimeout == 0 ||
 		configure.MaxHeaderBytes == 0 {
 
-		configServerSet := getConfigServerSet(configure.ServerSet)
+		configServerSet := newConfigServerSet(configure.ServerSet)
 
 		configure.Address = configServerSet.BaseUrl + ":" + strconv.Itoa(configServerSet.Port)
 		configure.BaseUrl = "http://" + configure.Address
@@ -114,7 +114,7 @@ type ConfigDevelop struct {
 	Development bool `json:"development"`
 }
 
-func getConfigDevelop() ConfigDevelop {
+func newConfigDevelop() ConfigDevelop {
 	configBaseDevelopJsonFile, err := os.ReadFile("config/base/develop.json")
 	if err != nil {
 		panic(err)
@@ -131,7 +131,7 @@ type ConfigBaseProject struct {
 	Name string `json:"name"`
 }
 
-func getConfigBaseProject() ConfigBaseProject {
+func newConfigBaseProject() ConfigBaseProject {
 	configBaseProjectJsonFile, err := os.ReadFile("config/base/project.json")
 	if err != nil {
 		panic(err)
@@ -152,7 +152,7 @@ type ConfigServerSet struct {
 	MaxHeaderBytes int    `json:"max_header_bytes"`
 }
 
-func getConfigServerSet(serverSet string) ConfigServerSet {
+func newConfigServerSet(serverSet string) ConfigServerSet {
 	serverSetJsonFile, err := os.ReadFile("config/" + serverSet + "/server_set.json")
 	if err != nil {
 		panic(err)

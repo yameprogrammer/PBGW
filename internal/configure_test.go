@@ -49,7 +49,7 @@ func TestGetConfigure_UsesConfigFallbackWhenEnvIsEmpty(t *testing.T) {
 	chdirToRepoRoot(t)
 	clearConfigureEnvs(t)
 
-	got := GetConfigure()
+	got := NewServerConfigure()
 
 	if got.Development != true {
 		t.Fatalf("Development mismatch: got=%v, want=%v", got.Development, true)
@@ -94,7 +94,7 @@ func TestGetConfigure_UsesEnvValuesWhenAllRequiredFieldsAreSet(t *testing.T) {
 	t.Setenv(EnvWriteTimeout, "50ns")
 	t.Setenv(EnvMaxHeaderBytes, "16")
 
-	got := GetConfigure()
+	got := NewServerConfigure()
 
 	if got.Development != false {
 		t.Fatalf("Development mismatch: got=%v, want=%v", got.Development, false)
@@ -139,7 +139,7 @@ func TestGetConfigure_FallsBackToServerSetConfigWhenAnyServerFieldIsMissing(t *t
 	t.Setenv(EnvWriteTimeout, "20ns")
 	t.Setenv(EnvMaxHeaderBytes, "16")
 
-	got := GetConfigure()
+	got := NewServerConfigure()
 
 	if got.Address != "localhost:8080" {
 		t.Fatalf("Address mismatch after fallback: got=%q, want=%q", got.Address, "localhost:8080")

@@ -12,7 +12,7 @@ import (
 func Maintenance(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 서버 Config 획득
-		configure := internal.GetConfigure()
+		configure := internal.NewServerConfigure()
 
 		// 요청자 IP 주소 획득
 		requestIP, _, err := net.SplitHostPort(r.RemoteAddr)
