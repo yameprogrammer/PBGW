@@ -1,0 +1,14 @@
+[
+  {
+    "db_tag": "master",
+    "drive_name": "mysql",
+    "db_name": "mysql",
+    "address": "",
+    "port": 3306,
+    "user": "pbgw",
+    "password": "",
+    "max_open": 10,
+    "max_idle": 5,
+    "max_life_time": 30
+  }
+]

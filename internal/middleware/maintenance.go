@@ -12,7 +12,7 @@ import (
 func Maintenance(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 서버 Config 획득
-		configure := internal.NewServerConfigure()
+		configure := internal.GetServerConfigure()
 
 		// 요청자 IP 주소 획득
 		requestIP, _, err := net.SplitHostPort(r.RemoteAddr)
@@ -24,7 +24,7 @@ func Maintenance(next http.Handler) http.Handler {
 		requestAllowed := false
 
 		// 개발환경의 서버로 판단 될 경우 지정된 IP 또는 지정된 범위의 IP 주소를 허용합니다.
-		if configure.Development == true {
+		if configure.Development() == true {
 			if IsWithinIPFilter(requestIP) == true {
 				requestAllowed = true
 			}

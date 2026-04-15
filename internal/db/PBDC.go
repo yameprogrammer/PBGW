@@ -27,13 +27,13 @@ type PBDC struct {
 	dbHandler   *sql.DB
 }
 
-func NewPBDC(dbName, address string, port int,
+func NewPBDC(driveName, address string, port int,
 	user string, password string,
 	maxOpen, maxIdle, maxLifeTime int) *PBDC {
 
 	// PBDC 구조체 초기화
 	pbdc := PBDC{
-		driveName:   dbName,
+		driveName:   driveName,
 		address:     address,
 		port:        port,
 		user:        user,

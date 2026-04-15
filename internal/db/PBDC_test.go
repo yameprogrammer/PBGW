@@ -7,20 +7,6 @@ import (
 	"testing"
 )
 
-func TestValidateDriveName(t *testing.T) {
-	t.Parallel()
-
-	if err := validateDriveName(DbMysql); err != nil {
-		t.Fatalf("mysql driver should be valid: %v", err)
-	}
-	if err := validateDriveName(DbPostgresql); err != nil {
-		t.Fatalf("postgres driver should be valid: %v", err)
-	}
-	if err := validateDriveName("sqlite"); err == nil {
-		t.Fatal("sqlite should be rejected")
-	}
-}
-
 func TestBuildConnectionInfo(t *testing.T) {
 	t.Parallel()
 

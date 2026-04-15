@@ -18,13 +18,13 @@ func main() {
 	// 미들웨어 적용
 	finalMux := middleware.Maintenance(mux)
 
-	configurer := internal.NewServerConfigure()
+	configurer := internal.GetServerConfigure()
 	var httpServer = &http.Server{
-		Addr:           configurer.Address,
+		Addr:           configurer.Address(),
 		Handler:        finalMux,
-		ReadTimeout:    configurer.ReadTimeout,
-		WriteTimeout:   configurer.WriteTimeout,
-		MaxHeaderBytes: configurer.MaxHeaderBytes,
+		ReadTimeout:    configurer.ReadTimeout(),
+		WriteTimeout:   configurer.WriteTimeout(),
+		MaxHeaderBytes: configurer.MaxHeaderBytes(),
 	}
 
 	log.Fatal(httpServer.ListenAndServe())
